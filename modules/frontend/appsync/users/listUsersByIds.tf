@@ -13,9 +13,9 @@ resource "aws_appsync_resolver" "listUsersByIds" {
     "version" : "2017-02-28",
     "operation" : "Scan",
     "filter" : {
-        "expression" : "id IN :ids",
-        "expressionValues": {
-            ":ids" : $utils.toJson($ctx.arguments.ids)
+        "expression" : "contains(:targets, id)",
+        "expressionValues" : {
+            ":targets" : { "SS" : { "S" : testman" }}
         }
     }
     #if( $ctx.args.count )
