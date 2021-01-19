@@ -6,6 +6,8 @@ locals {
   s3_origin_id = "frontendS3Origin"
 }
 
+variable "acm_certificate_arn" {}
+
 resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   origin {
     domain_name = aws_s3_bucket.s3_bucket.bucket_regional_domain_name
@@ -46,16 +48,32 @@ resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = var.acm_certificate_arn
+    cloudfront_default_certificate = false
+    ssl_support_method = "sni-only"
   }
+  aliases = ["todo.ahyaemon.com"]
 
   custom_error_response {
     error_code = 403
     response_code = 200
     response_page_path = "/"
   }
+
 }
 
 output "cloudfront_domain_name" {
   value = aws_cloudfront_distribution.cloudfront_distribution.domain_name
+}
+
+resource "aws_route53_record" "record" {
+  zone_id = "Z07475891D00S6Q5AB6S"
+  name    = "todo.ahyaemon.com"
+  type    = "A"
+
+  alias {
+    name = aws_cloudfront_distribution.cloudfront_distribution.domain_name
+    evaluate_target_health = false
+    zone_id = aws_cloudfront_distribution.cloudfront_distribution.hosted_zone_id
+  }
 }
